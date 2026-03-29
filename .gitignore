@@ -1,6 +1,0 @@
-.env
-*.ipynb
-chroma_db
-books_cleaned.csv
-tagged_description.txt
-__pycache__
