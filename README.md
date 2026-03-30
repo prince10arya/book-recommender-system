@@ -1,52 +1,100 @@
-# Book Recommender System
+<div align="center">
+  <h1>📚 Book Recommender System 🔍</h1>
+  <p><i>A full-stack, semantic book recommendation engine powered by GenAI & vector search</i></p>
 
-A full-stack semantic book recommendation engine powered by Google Generative AI Embeddings, ChromaDB, FastAPI, and Next.js.
+  <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi" alt="FastAPI" /></a>
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js" /></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" /></a>
+  <a href="https://www.trychroma.com/"><img src="https://img.shields.io/badge/ChromaDB-FF6600?style=for-the-badge" alt="ChromaDB" /></a>
+  <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/Google_Gemini-8E75B2?style=for-the-badge&logo=google&logoColor=white" alt="Gemini Embeddings" /></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python_3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+</div>
 
-## What We Have Done
+<br/>
 
-We have built a two-part application to provide highly accurate, semantic book recommendations based on natural language queries:
+## ✨ Overview
 
-1. **Backend (Python / FastAPI)**:
-   - Built a REST API featuring a `/recommend` endpoint.
-   - Integrated **ChromaDB** as our local vector database, handling high-performance similarity searches.
-   - Utilized **Google Generative AI Embeddings** (`gemini-embedding-2-preview`) to convert book descriptions into high-dimensional vector embeddings, allowing the system to understand the context and meaning of the books.
-   - Created an automated ETL pipeline that processes a cleaned dataset (`books_cleaned.csv`), extracts tagged descriptions, chunks the text, and persists it into ChromaDB on startup.
+This project is a powerful, two-part application designed to provide highly accurate and contextual book recommendations using natural language queries instead of traditional keyword matching.
 
-2. **Frontend (Next.js / React)**:
-   - Built a sleek, responsive user interface using Next.js 16 and React 19.
-   - Implemented a search bar and a results grid (`SkeletonGrid`, `BookCard`, `BookModal`) to seamlessly capture user queries and display the recommended books along with their metadata (e.g., summary, cover image, rating, similarity score).
+### 🧠 How It Works (What We Have Done)
 
-## Why We Did It
+* **Backend (Python / FastAPI)** 🚀
+  * Features a hyper-fast REST API with a dedicated `/recommend` endpoint.
+  * Uses **Google Generative AI Embeddings** (`gemini-embedding-2-preview`) to convert book descriptions into high-dimensional vector embeddings, allowing the system to truly understand context and plot arcs.
+  * Integrated **ChromaDB** as the local vector database for blazing-fast similarity searches.
+  * Incorporates an automated ETL pipeline that processes `books_cleaned.csv`, extracting and chunking tagged descriptions directly into ChromaDB on startup.
 
-- **Semantic Understanding vs. Keyword Matching**: Traditional search engines rely heavily on exact keyword matches. By utilizing vector embeddings, our system understands the *meaning* behind a user's query. For example, searching for "a story about a wizard in a magical school" will recommend Harry Potter, even if those exact words aren't in the book's title.
-- **Speed and Efficiency**: By leveraging ChromaDB locally, we ensure that similarity search lookups (computing cosine distances) happen in milliseconds.
-- **Modern User Experience**: We chose Next.js to provide a fast, modern frontend that easily communicates with our FastAPI backend, providing an instantaneous feedback loop for the user.
+* **Frontend (Next.js / React)** 💻
+  * A sleek, responsive user interface built using the bleeding-edge Next.js 16 and React 19.
+  * Seamlessly handles user interactions via a custom search bar and displays dynamic results using custom components (`SkeletonGrid`, `BookCard`, `BookModal`).
+  * Instantaneously surfaces rich book metadata alongside context-aware similarity scores.
 
-## Running the Project
+## 💡 Why We Built It
 
-### Prerequisites
+- **Semantic Understanding over Keywords** 🎯
+  Traditional search struggles unless you type the exact title. Our vector-based engine understands *meaning*. If you search for *"a story about a boy going to a wizarding school"*, it will recommend *Harry Potter*, even if the search terms are missing from the book!
+- **Blazing Fast Performance** ⚡
+  By utilizing a local instance of ChromaDB, calculating complex cosine distances between multidimensional vectors happens in mere milliseconds.
+- **Modern User Experience** 🎨
+  Next.js provides an incredibly fast, dynamic frontend. Paired with our backend, it constructs an instantaneous feedback loop for users seamlessly traversing the literary world.
+
+---
+
+## 🛠 Tech Stack
+
+| Domain | Technology | Description |
+| :--- | :--- | :--- |
+| **Frontend** | Next.js 16, React 19, TypeScript, Tailwind | The modern web framework driving the user interface |
+| **Backend API** | FastAPI, Python 3.10+ | High-performance async server |
+| **Vector DB** | ChromaDB | Specialized database tailored for embedding storage & retrieval |
+| **AI / Embeddings** | Google Gemini `gemini-embedding-2-preview` | The brain behind our semantic text comprehension |
+| **Data Processing** | Pandas, LangChain Text Splitters | Cleans, structures, and chunks data for embeddings |
+
+---
+
+## 🚀 Running the Project
+
+### 📋 Prerequisites
 - Python 3.10+
 - Node.js & npm (or yarn/pnpm)
-- A Google Gemini API Key added to your `.env` file (`GOOGLE_API_KEY=your-api-key`)
+- A Google Gemini API Key added to your backend `.env` file:
+  ```env
+  GOOGLE_API_KEY=your-api-key
+  ```
 
-### Backend Setup
-1. Navigate to the `backend/` directory.
-2. Install dependencies (e.g., using `pip` or `uv`).
-3. Place `books_cleaned.csv` in the root directory.
-4. Run the FastAPI server:
+### ⚙️ Backend Setup
+1. Navigate to the `backend/` directory:
+   ```bash
+   cd backend
+   ```
+2. Install dependencies (e.g., using `pip` or `uv`):
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Place your raw dataset `books_cleaned.csv` into the root directory.
+4. Launch the FastAPI server:
    ```bash
    fastapi dev main.py
    ```
-   *(On first run, this will build the ChromaDB from scratch which may take some time.)*
+   *Note: On your very first run, the system will process the dataset and build the ChromaDB from scratch. This may take a few moments.*
 
-### Frontend Setup
-1. Navigate to the `frontend/` directory.
+### 🖥️ Frontend Setup
+1. Open a new terminal and navigate to the `frontend/` directory:
+   ```bash
+   cd frontend
+   ```
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Run the development server:
+3. Run the Next.js development server:
    ```bash
    npm run dev
    ```
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+4. Access the application at: [http://localhost:3000](http://localhost:3000)
+
+<br/>
+<div align="center">
+  <i>Happy Reading!</i>
+</div>
