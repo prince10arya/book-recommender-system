@@ -1,0 +1,18 @@
+[project]
+name = "backend"
+version = "1.0.0"
+description = "FastAPI backend for the book recommender system"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "langchain-community",
+    "langchain-text-splitters",
+    "langchain-chroma",
+    "langchain-google-genai",
+    "google-generativeai",
+    "pandas",
+    "python-dotenv",
+    "chromadb",
+    "tqdm",
+]
