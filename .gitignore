@@ -1,0 +1,10 @@
+.env
+.venv
+chroma_db
+node_modules
+venv
+*.ipynb
+*.csv
+*.txt
+__pycache__
+.next
