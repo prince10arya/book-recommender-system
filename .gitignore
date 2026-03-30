@@ -3,7 +3,6 @@
 chroma_db
 node_modules
 venv
-*.ipynb
 *.csv
 *.txt
 __pycache__
