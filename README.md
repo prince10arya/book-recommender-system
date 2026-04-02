@@ -104,7 +104,7 @@ This project is a powerful, two-part application designed to provide highly accu
   <h1>🎥 Project Demo</h1>
   <p align="center">
     <a href="https://www.youtube.com/watch?v=_ZM0_wCjI9wD">
-      <img src="https://i9.ytimg.com/vi_webp/_ZM0_wCjI9w/mq3.webp?sqp=CMiSsM4G-oaymwEmCMACELQB8quKqQMa8AEB-AH-CYACzgWKAgwIABABGHIgWigtMA8=&rs=AOn4CLC4WVWQlec9_21VpMzgfIMmuPEg5g" alt="Watch Demo">
+      <img src="https://i9.ytimg.com/vi_webp/_ZM0_wCjI9w/mq3.webp?sqp=CKjVuc4G-oaymwEmCMACELQB8quKqQMa8AEB-AH-CYACzgWKAgwIABABGHIgWigtMA8=&rs=AOn4CLDMgdkRoozLDrkkXENkSrxVLZUHeQ" alt="Watch Demo">
     </a>
   </p>
 </div>
