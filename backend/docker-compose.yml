@@ -1,0 +1,93 @@
+name: book-recommender
+
+services:
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 1. Preprocessing Service — ETL pipeline
+  #    Run:  docker compose run --rm preprocessing
+  #    Then: POST http://localhost:8001/preprocess
+  # ─────────────────────────────────────────────────────────────────────────
+  preprocessing:
+    build:
+      context: .
+      dockerfile: preprocessing_service/Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      # Shared data volume — books.csv goes in here; artifacts come out
+      - book_data:/app/data
+    env_file:
+      - .env
+    environment:
+      # Allow CSV uploads up to 50 MB
+      - MAX_UPLOAD_SIZE_MB=50
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 2. Embedding Service — Gemini embeddings → ChromaDB
+  #    Depends on preprocessing being healthy first.
+  #    Run:  POST http://localhost:8002/embed
+  # ─────────────────────────────────────────────────────────────────────────
+  embedding:
+    build:
+      context: .
+      dockerfile: embedding_service/Dockerfile
+    ports:
+      - "8002:8002"
+    volumes:
+      - book_data:/app/data
+    env_file:
+      - .env
+    depends_on:
+      preprocessing:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 3. Retrieval Service — public recommendation API
+  #    Depends on embedding being healthy first.
+  #    Frontend talks to: http://localhost:8000/recommend
+  # ─────────────────────────────────────────────────────────────────────────
+  retrieval:
+    build:
+      context: .
+      dockerfile: retrieval_service/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - book_data:/app/data
+    env_file:
+      - .env
+    depends_on:
+      embedding:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+# ───────────────────────────────────────────────────────────────────────────
+# Shared named volume for all inter-service file artifacts
+#   /app/data/books.csv               ← you place this here
+#   /app/data/books_cleaned.csv       ← produced by preprocessing
+#   /app/data/tagged_description.txt  ← produced by preprocessing
+#   /app/data/chroma_db/              ← produced by embedding
+# ───────────────────────────────────────────────────────────────────────────
+volumes:
+  book_data:
+    driver: local

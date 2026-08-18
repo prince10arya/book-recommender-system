@@ -1,102 +1,126 @@
 'use client';
 
+import { useEffect } from 'react';
 import Image from 'next/image';
-import { useState } from 'react';
 import { Book } from '../types';
 
-interface BookModalProps {
+interface Props {
   book: Book;
   onClose: () => void;
 }
 
-export default function BookModal({ book, onClose }: BookModalProps) {
-  const [imgError, setImgError] = useState(false);
-  const hasImage = book.thumbnail && !imgError;
+export default function BookModal({ book, onClose }: Props) {
+  // Close on Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) onClose();
-  };
+  // Lock body scroll
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  const hasCover = !!book.thumbnail;
 
   return (
-    <div className="modal-overlay" onClick={handleOverlayClick} role="dialog" aria-modal aria-label={book.title}>
+    <div
+      className="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Book details: ${book.title}`}
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
       <div className="modal">
         <div className="modal-inner">
-          {/* Cover */}
+          {/* Left: full-bleed cover */}
           <div className="modal-cover-col">
-            {hasImage ? (
+            {hasCover ? (
               <Image
                 src={book.thumbnail}
-                alt={book.title}
+                alt={`Cover of ${book.title}`}
                 fill
+                sizes="220px"
                 style={{ objectFit: 'cover' }}
                 unoptimized
-                onError={() => setImgError(true)}
               />
             ) : (
               <div className="modal-cover-fallback">
-                <svg width="48" height="48" fill="none" stroke="currentColor" strokeWidth="1" viewBox="0 0 24 24">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" strokeLinecap="round" strokeLinejoin="round" />
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#c8c8c1" strokeWidth="1.5">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                 </svg>
+                <div className="modal-cover-fallback-title">{book.title}</div>
               </div>
             )}
-            <div className="modal-badge">{book.similarity_score.toFixed(0)}% match</div>
+            {/* Similarity pill overlay */}
+            <div className="modal-sim-pill" aria-label={`${book.similarity_score}% match`}>
+              {book.similarity_score.toFixed(1)}% match
+            </div>
           </div>
 
-          {/* Content */}
+          {/* Right: content */}
           <div className="modal-content">
-            <button id="modal-close-btn" className="modal-close" onClick={onClose} aria-label="Close modal">
-              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
-              </svg>
+            {/* Close button */}
+            <button
+              id="modal-close-btn"
+              className="modal-close"
+              onClick={onClose}
+              aria-label="Close modal"
+            >
+              ✕
             </button>
 
-            <h2 className="modal-title">{book.title_and_subtitle || book.title}</h2>
-            <p className="modal-author">by {book.authors}</p>
+            {/* Title & author */}
+            <div>
+              <h2 className="modal-title">{book.title_and_subtitle || book.title}</h2>
+              <p className="modal-author">by {book.authors}</p>
+            </div>
 
+            {/* Chips */}
             <div className="modal-chips">
-              {book.categories && <span className="chip chip-category">{book.categories}</span>}
-              {book.published_year && <span className="chip chip-year">{book.published_year}</span>}
+              {book.categories && (
+                <span className="chip chip-category">{book.categories}</span>
+              )}
+              {book.published_year && (
+                <span className="chip chip-year">{book.published_year}</span>
+              )}
             </div>
 
             <div className="modal-divider" />
 
+            {/* Stats */}
             <div className="modal-stats">
               {book.average_rating != null && (
                 <div className="stat">
-                  <div className="stat-value" style={{ color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
-                    </svg>
-                    {book.average_rating.toFixed(1)}
-                  </div>
-                  <div className="stat-label">Rating</div>
-                </div>
-              )}
-              {book.ratings_count != null && (
-                <div className="stat">
-                  <div className="stat-value">{book.ratings_count.toLocaleString()}</div>
-                  <div className="stat-label">Reviews</div>
+                  <span className="stat-value" style={{ color: '#e60023' }}>
+                    {'★'.repeat(Math.round(book.average_rating))}{'☆'.repeat(5 - Math.round(book.average_rating))}
+                  </span>
+                  <span className="stat-label">{book.average_rating.toFixed(2)} rating</span>
                 </div>
               )}
               {book.num_pages != null && (
                 <div className="stat">
-                  <div className="stat-value">{book.num_pages}</div>
-                  <div className="stat-label">Pages</div>
+                  <span className="stat-value">{book.num_pages.toLocaleString()}</span>
+                  <span className="stat-label">Pages</span>
+                </div>
+              )}
+              {book.ratings_count != null && (
+                <div className="stat">
+                  <span className="stat-value">{book.ratings_count.toLocaleString()}</span>
+                  <span className="stat-label">Ratings</span>
                 </div>
               )}
             </div>
 
+            {/* Description */}
             {book.description && (
               <>
                 <div className="modal-divider" />
                 <p className="modal-description">{book.description}</p>
               </>
             )}
-
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
-              ISBN: {book.isbn13}
-            </div>
           </div>
         </div>
       </div>

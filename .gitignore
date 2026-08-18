@@ -7,3 +7,5 @@ venv
 *.txt
 __pycache__
 .next
+
+graphify-out
