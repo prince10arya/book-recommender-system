@@ -1,68 +1,72 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
 import { Book } from '../types';
 
-interface BookCardProps {
+interface Props {
   book: Book;
-  onClick: () => void;
   delay?: number;
+  onClick: () => void;
 }
 
-export default function BookCard({ book, onClick, delay = 0 }: BookCardProps) {
-  const [imgError, setImgError] = useState(false);
-  const hasImage = book.thumbnail && !imgError;
+export default function BookCard({ book, delay = 0, onClick }: Props) {
+  const hasCover = !!book.thumbnail;
+  const ratingStars = book.average_rating
+    ? '★'.repeat(Math.round(book.average_rating)) + '☆'.repeat(5 - Math.round(book.average_rating))
+    : null;
 
   return (
     <article
-      className="book-card"
-      onClick={onClick}
+      className="pin-card"
+      role="listitem"
       style={{ animationDelay: `${delay}ms` }}
-      role="button"
+      onClick={onClick}
       tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && onClick()}
       aria-label={`${book.title} by ${book.authors}`}
+      onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
-      <div className="book-cover-wrapper">
-        {hasImage ? (
+      {/* Cover — full bleed, no padding */}
+      <div className="pin-cover-wrap">
+        {hasCover ? (
           <Image
-            className="book-cover"
             src={book.thumbnail}
-            alt={book.title}
+            alt={`Cover of ${book.title}`}
             fill
-            sizes="(max-width: 640px) 160px, 200px"
-            onError={() => setImgError(true)}
+            sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+            className="pin-cover"
             unoptimized
           />
         ) : (
-          <div className="book-cover-fallback">
-            <svg width="36" height="36" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" strokeLinecap="round" strokeLinejoin="round" />
+          <div className="pin-cover-fallback">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#91918c" strokeWidth="1.5">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
             </svg>
-            <span>{book.title_and_subtitle || book.title}</span>
+            <div className="pin-cover-fallback-title">{book.title}</div>
+            <div className="pin-cover-fallback-author">{book.authors}</div>
           </div>
         )}
-        <div className="similarity-badge">{book.similarity_score.toFixed(0)}% match</div>
+
+        {/* Similarity pill — overlay on cover */}
+        <span className="pin-sim-pill" aria-label={`${book.similarity_score}% match`}>
+          {book.similarity_score.toFixed(0)}% match
+        </span>
+
+        {/* Save pill on hover */}
+        <button className="pin-save-pill" aria-label="View book details" onClick={(e) => { e.stopPropagation(); onClick(); }}>
+          View
+        </button>
       </div>
 
-      <div className="book-info">
-        <h3 className="book-title">{book.title_and_subtitle || book.title}</h3>
-        <p className="book-author">{book.authors}</p>
-        <div className="book-meta">
-          {book.average_rating ? (
-            <div className="book-rating">
-              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
-              </svg>
-              {book.average_rating.toFixed(1)}
-            </div>
-          ) : null}
-          {book.categories && (
-            <div className="category-chip">{book.categories}</div>
-          )}
-        </div>
+      {/* Metadata below image */}
+      <div className="pin-meta">
+        <p className="pin-title">{book.title_and_subtitle || book.title}</p>
+        <p className="pin-author">{book.authors}</p>
+        {ratingStars && (
+          <div className="pin-rating" aria-label={`Rating: ${book.average_rating} out of 5`}>
+            <span style={{ color: '#e60023', fontSize: '11px', letterSpacing: '-1px' }}>{ratingStars}</span>
+            <span>{book.average_rating?.toFixed(1)}</span>
+          </div>
+        )}
       </div>
     </article>
   );

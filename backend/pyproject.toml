@@ -1,7 +1,7 @@
 [project]
-name = "backend"
-version = "1.0.0"
-description = "FastAPI backend for the book recommender system"
+name = "book-recommender-backend"
+version = "2.0.0"
+description = "Book Recommender — microservices backend (preprocessing, embedding, retrieval)"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi",
@@ -9,10 +9,16 @@ dependencies = [
     "langchain-community",
     "langchain-text-splitters",
     "langchain-chroma",
-    "langchain-google-genai",
-    "google-generativeai",
+    "langchain-openai",
     "pandas",
+    "numpy",
     "python-dotenv",
+    "pydantic-settings",
     "chromadb",
     "tqdm",
+    "python-multipart",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["shared*", "preprocessing_service*", "embedding_service*", "retrieval_service*"]
