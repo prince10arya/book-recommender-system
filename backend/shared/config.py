@@ -3,6 +3,11 @@ shared/config.py
 ----------------
 Central configuration: all paths, environment variables, and tunable constants.
 Every service imports from here — no path logic lives anywhere else.
+
+Embedding backend: OpenRouter  (https://openrouter.ai/api/v1)
+  - Compatible with the OpenAI embeddings API format.
+  - Set OPENROUTER_API_KEY in your .env file.
+  - Change EMBEDDING_MODEL to any OpenRouter embedding model slug.
 """
 
 from __future__ import annotations
@@ -39,8 +44,24 @@ CHROMA_PATH: Path = DATA_DIR / "chroma_db"
 # API keys & model names
 # ---------------------------------------------------------------------------
 
-GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
-EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "gemini-embedding-2-preview")
+# OpenRouter API key — used for embeddings via the OpenAI-compatible endpoint.
+# Obtain yours at https://openrouter.ai/keys
+OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+
+# Embedding model slug served by OpenRouter.
+# Swap to e.g. "openai/text-embedding-3-large" or "cohere/embed-english-v3.0"
+# without touching any other code.
+EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "openai/text-embedding-3-small")
+
+# Shared service token used by auth_service.py in each service.
+# Override in production via the SERVICE_TOKEN environment variable.
+SERVICE_TOKEN: str = os.getenv("SERVICE_TOKEN", "dev-secret-token")
+
+# When set to "true", the Retrieval Service will also require X-Token.
+# Default is "false" so the public frontend can call /recommend freely.
+REQUIRE_TOKEN: bool = os.getenv("REQUIRE_TOKEN", "false").lower() == "true"
+
 
 # ---------------------------------------------------------------------------
 # ETL / embedding tuning

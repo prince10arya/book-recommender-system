@@ -30,7 +30,7 @@ services:
       start_period: 10s
 
   # ─────────────────────────────────────────────────────────────────────────
-  # 2. Embedding Service — Gemini embeddings → ChromaDB
+  # 2. Embedding Service — OpenRouter embeddings → ChromaDB
   #    Depends on preprocessing being healthy first.
   #    Run:  POST http://localhost:8002/embed
   # ─────────────────────────────────────────────────────────────────────────
@@ -80,6 +80,31 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # 4. Frontend — Next.js web app
+  #    Accessible at: http://localhost:3000
+  # ─────────────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      # Server-side env var: Next.js API route calls retrieval via Docker network
+      - BACKEND_URL=http://retrieval:8000
+      - NODE_ENV=production
+    depends_on:
+      retrieval:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
 # ───────────────────────────────────────────────────────────────────────────
 # Shared named volume for all inter-service file artifacts

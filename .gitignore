@@ -9,3 +9,5 @@ __pycache__
 .next
 
 graphify-out
+.agents
+skills-lock.json

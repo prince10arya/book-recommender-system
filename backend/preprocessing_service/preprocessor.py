@@ -62,10 +62,12 @@ def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df = df[df["description"].str.strip().str.len() >= MIN_DESC_LENGTH].copy()
 
     # Step 3: Composite title column
+    # Fill NaN subtitles with empty string before joining to avoid TypeError
+    subtitle_filled = df["subtitle"].fillna("")
     df["title_and_subtitle"] = np.where(
-        df["subtitle"].isna(),
+        subtitle_filled == "",
         df["title"],
-        df[["title", "subtitle"]].astype(str).agg(": ".join, axis=1),
+        df["title"] + ": " + subtitle_filled,
     )
 
     # Step 4: Drop unused columns

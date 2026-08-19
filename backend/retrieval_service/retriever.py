@@ -6,6 +6,9 @@ the book metadata CSV.
 
 No ETL, no embedding logic here — only consumption of the artifacts
 produced by the Preprocessing and Embedding services.
+
+Embeddings are loaded via OpenRouter's OpenAI-compatible endpoint
+(same model slug as used during indexing).
 """
 
 from __future__ import annotations
@@ -15,13 +18,15 @@ import logging
 import pandas as pd
 
 from langchain_chroma import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 
 from shared.config import (
     CHROMA_PATH,
     CLEANED_CSV_PATH,
     EMBEDDING_MODEL,
     MAX_SEARCH_K,
+    OPENROUTER_API_KEY,
+    OPENROUTER_BASE_URL,
     SEARCH_MULTIPLIER,
 )
 from shared.models import BookResult
@@ -64,7 +69,11 @@ def initialize() -> None:
     _books_df["isbn13"] = _books_df["isbn13"].astype(str)
 
     logger.info("Loading ChromaDB from %s...", CHROMA_PATH)
-    embeddings = GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL)
+    embeddings = OpenAIEmbeddings(
+        model=EMBEDDING_MODEL,
+        openai_api_key=OPENROUTER_API_KEY,       # type: ignore[arg-type]
+        openai_api_base=OPENROUTER_BASE_URL,
+    )
     _db = Chroma(
         persist_directory=str(CHROMA_PATH),
         embedding_function=embeddings,

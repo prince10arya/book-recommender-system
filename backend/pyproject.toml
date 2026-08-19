@@ -9,16 +9,14 @@ dependencies = [
     "langchain-community",
     "langchain-text-splitters",
     "langchain-chroma",
-    "langchain-google-genai",
-    "google-generativeai",
+    "langchain-openai",
     "pandas",
     "numpy",
     "python-dotenv",
     "pydantic-settings",
     "chromadb",
     "tqdm",
-   "python-multipart",
-
+    "python-multipart",
 ]
 
 [tool.setuptools.packages.find]

@@ -1,10 +1,14 @@
 """
 embedding_service/embedder.py
 ------------------------------
-Generates Gemini embeddings for the tagged book descriptions
-and populates a persistent ChromaDB vector store.
+Generates embeddings for the tagged book descriptions via OpenRouter's
+OpenAI-compatible embeddings endpoint, then populates a persistent
+ChromaDB vector store.
 
-Extracted and refactored from the original recommender.py::_get_db().
+Provider  : OpenRouter  (https://openrouter.ai/api/v1)
+SDK used  : langchain-openai.OpenAIEmbeddings (base_url overridden)
+Default   : openai/text-embedding-3-small  (1536-dim, fast & cheap)
+Override  : set EMBEDDING_MODEL env var to any OpenRouter embedding slug
 """
 
 from __future__ import annotations
@@ -14,7 +18,7 @@ from pathlib import Path
 
 from langchain_community.document_loaders import TextLoader
 from langchain_chroma import Chroma
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import CharacterTextSplitter
 from tqdm import tqdm
 
@@ -24,6 +28,8 @@ from shared.config import (
     CHUNK_SIZE,
     EMBED_BATCH_SIZE,
     EMBEDDING_MODEL,
+    OPENROUTER_API_KEY,
+    OPENROUTER_BASE_URL,
     TAGGED_TXT_PATH,
 )
 
@@ -35,9 +41,18 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-def get_embeddings() -> GoogleGenerativeAIEmbeddings:
-    """Return a configured Gemini embedding function."""
-    return GoogleGenerativeAIEmbeddings(model=EMBEDDING_MODEL)
+def get_embeddings() -> OpenAIEmbeddings:
+    """
+    Return an OpenAIEmbeddings instance configured to use OpenRouter.
+
+    OpenRouter exposes an OpenAI-compatible ``/embeddings`` endpoint, so
+    we only need to override ``openai_api_base`` and ``openai_api_key``.
+    """
+    return OpenAIEmbeddings(
+        model=EMBEDDING_MODEL,
+        openai_api_key=OPENROUTER_API_KEY,       # type: ignore[arg-type]
+        openai_api_base=OPENROUTER_BASE_URL,
+    )
 
 
 def is_db_populated(chroma_path: Path = CHROMA_PATH) -> bool:
@@ -48,7 +63,9 @@ def is_db_populated(chroma_path: Path = CHROMA_PATH) -> bool:
 def get_db_stats(chroma_path: Path = CHROMA_PATH) -> dict:
     """
     Return basic ChromaDB stats without embedding any new documents.
-    Raises RuntimeError if the DB does not exist.
+
+    Raises:
+        RuntimeError: If the DB does not exist.
     """
     if not is_db_populated(chroma_path):
         return {"exists": False, "document_count": None}
@@ -74,8 +91,8 @@ def build_chroma_db(
     force: bool = False,
 ) -> dict:
     """
-    Read `tagged_description.txt`, embed every line with Gemini, and persist
-    the result to ChromaDB.
+    Read ``tagged_description.txt``, embed every line with the configured
+    OpenRouter model, and persist the result to ChromaDB.
 
     Args:
         txt_path:    Path to the tagged descriptions text file.
@@ -84,10 +101,10 @@ def build_chroma_db(
         force:       If True, rebuild even if the DB already exists.
 
     Returns:
-        A dict with ``documents_embedded`` count.
+        A dict with ``documents_embedded`` count and ``skipped`` flag.
 
     Raises:
-        FileNotFoundError: If `txt_path` does not exist.
+        FileNotFoundError: If ``txt_path`` does not exist.
     """
     if not txt_path.exists():
         raise FileNotFoundError(
@@ -113,7 +130,12 @@ def build_chroma_db(
     logger.info("Split into %d documents.", len(docs))
 
     batches = [docs[i : i + batch_size] for i in range(0, len(docs), batch_size)]
-    logger.info("Embedding %d documents in %d batches...", len(docs), len(batches))
+    logger.info(
+        "Embedding %d documents in %d batches via OpenRouter (%s)...",
+        len(docs),
+        len(batches),
+        EMBEDDING_MODEL,
+    )
 
     embeddings = get_embeddings()
     chroma_path.mkdir(parents=True, exist_ok=True)

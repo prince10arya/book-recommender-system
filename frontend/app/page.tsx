@@ -83,32 +83,6 @@ export default function HomePage() {
           <span className="nav-logo-icon">B</span>
           <span className="nav-wordmark">BookMind</span>
         </a>
-
-        {/* Centered search (visible after first search) */}
-        <div className="nav-search-wrap">
-          <form className="nav-search" onSubmit={handleNavSubmit}>
-            <span className="nav-search-icon"><SearchIcon /></span>
-            <input
-              ref={navInputRef}
-              className="nav-search-input"
-              type="search"
-              placeholder="Search for books, moods, genres..."
-              defaultValue={lastQuery}
-              key={lastQuery}
-              aria-label="Search books"
-            />
-            <button
-              type="submit"
-              id="nav-search-btn"
-              className="nav-search-btn"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <svg className="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25" /><path d="M12 2a10 10 0 0 1 10 10" /></svg>
-              ) : 'Search'}
-            </button>
-          </form>
-        </div>
       </nav>
 
       {/* ── Hero ── */}
